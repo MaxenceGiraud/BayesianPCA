@@ -16,6 +16,10 @@ cd BayesianPCA
 
 ```python
 import bayespca
+
+## Original PCA
+p = bayespca.PCA(n_components = 2)
+p.fit_transform(X)
 ```
 
 ## TODO
@@ -26,4 +30,5 @@ import bayespca
 
 ## References
 
-[1] Bishop, C. M. (1999). Bayesian PCA. MIT Press.
+[1] Bishop, C. M. (1999). Bayesian PCA. MIT Press.     
+[2] Tipping, M. E . and C. M. Bishop (1997). Probabilistic principal component analysis. Journal of the Royal Statistical Society, B.

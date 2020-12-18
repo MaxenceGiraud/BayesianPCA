@@ -16,7 +16,7 @@ class ProbabilisticPCA:
             raise ValueError("method must be either eig or em")
         if method == "em":
             raise NotImplementedError
-        
+
         self.n_components = n_components
         self.method = method
 
@@ -31,6 +31,12 @@ class ProbabilisticPCA:
         elif self.method == 'em':
             self._fit_em(X)
 
+    def _expectation_step(self):
+        pass
+
+    def _maximization_step(self):
+        pass
+
     def _fit_em(self,X):
         pass
 
@@ -43,7 +49,7 @@ class ProbabilisticPCA:
 
         self.W = eig_vec[:,eig_sort[:self.n_components]] @ np.sqrt(np.diag(eig_val[eig_sort[:self.n_components]])-self._sigma2*np.eye(self.n_components))
 
-        self.C = self.W @ self.W.T + self._sigma2 * np.eye(X.shape[1])
+        self.C = self.W @ self.W.T + self._sigma2 * np.eye(X.shape[1]) # Observation Covariance
         self.M = self.W.T @ self.W + self._sigma2 * np.eye(self.n_components)
     
 
@@ -52,13 +58,16 @@ class ProbabilisticPCA:
         return self.transform(X)
 
     def transform(self,X):
-        M_inv = np.linalg.pinv(self.M)
         X_transform = np.zeros((X.shape[0],self.n_components))
 
+        # Parameters of the Gaussians
+        M_inv = np.linalg.pinv(self.M)
         transform_cov = self._sigma2 *  M_inv
         transform_means = M_inv @ self.W.T @ (X-self.mean).T
+
         for i in range(X.shape[0]):
             X_transform[i] = np.random.multivariate_normal(transform_means[:,i],transform_cov)
+
         return X_transform
 
     def generate(self,n_samples):

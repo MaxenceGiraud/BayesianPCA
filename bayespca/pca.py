@@ -17,9 +17,6 @@ class PCA:
         self.method = method
 
     def _fit(self,X):
-        # Normalize data
-        X = (X - X.mean(axis=0)) /X.std(axis=0)
-
         if self.method == 'svd' :
             return np.linalg.svd(X)
 
@@ -39,25 +36,27 @@ class PCA:
             self.eigen_vec = self._fit(X)
 
     def fit_transform(self,X):
+        # Normalize data
+        self.mean =  X.mean(axis=0)
+        self.std = X.std(axis=0)
+        X = (X -self.mean) / self.std
+
         if self.method == 'svd' :
             u,s,_ = self._fit(X)
             self.singular_values  = s[:self.n_components]
             return u[:,:self.n_components] * self.singular_values
 
         elif self.method == 'cov' :
-            # Normalize data
-            X = (X - X.mean(axis=0)) /X.std(axis=0)
+            
             self.eigen_vec = self._fit(X)
-
             return X @ self.eigen_vec
 
 
     def transform(self,X):
+        X = (X-self.mean) / self.std
         if self.method == 'svd':
             u,_,_ = self._fit(X)
             return u[:,self.n_components] * self.singular_values
         
         elif self.method == 'cov' :
-            # Normalize data
-            X = (X - X.mean(axis=0)) /X.std(axis=0)
             return X @ self.eigen_vec

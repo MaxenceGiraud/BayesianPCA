@@ -38,8 +38,7 @@ class PCA:
     def fit_transform(self,X):
         # Normalize data
         self.mean =  X.mean(axis=0)
-        self.std = X.std(axis=0)
-        X = (X -self.mean) / self.std
+        X = (X -self.mean)
 
         if self.method == 'svd' :
             u,s,_ = self._fit(X)
@@ -53,7 +52,7 @@ class PCA:
 
 
     def transform(self,X):
-        X = (X-self.mean) / self.std
+        X = (X-self.mean) 
         if self.method == 'svd':
             u,_,_ = self._fit(X)
             return u[:,self.n_components] * self.singular_values

@@ -9,7 +9,7 @@ class ProbabilisticPCA:
     n_components : int,
         Number of components to consider
     method : str,
-        Method of computation (either eig of em), Default is eigen decomposition
+        Method of computation (either eig for Eigen Decomposition or em for Expectation-Maximization algorithm), Default is eigen decomposition
     '''
     def __init__(self,n_components,method = "eig"):
         if method not in ["eig","em"]:
@@ -32,13 +32,16 @@ class ProbabilisticPCA:
             self._fit_em(X)
 
     def _expectation_step(self):
-        pass
+        raise NotImplementedError
 
     def _maximization_step(self):
-        pass
+        raise NotImplementedError
 
     def _fit_em(self,X):
-        pass
+        iter_max = 100
+        for _ in range(iter_max):
+            self._expectation_step()
+            self._maximization_step()
 
     def _fit_eig_decomp(self,X):
         sample_cov = 1/X.shape[0] * X.T @ X
@@ -50,7 +53,7 @@ class ProbabilisticPCA:
         self.W = eig_vec[:,eig_sort[:self.n_components]] @ np.sqrt(np.diag(eig_val[eig_sort[:self.n_components]])-self._sigma2*np.eye(self.n_components))
 
         self.C = self.W @ self.W.T + self._sigma2 * np.eye(X.shape[1]) # Observation Covariance
-        self.M = self.W.T @ self.W + self._sigma2 * np.eye(self.n_components)
+        self.M_inv = np.linalg.inv(self.W.T @ self.W + self._sigma2 * np.eye(self.n_components))
     
 
     def fit_transform(self,X):
@@ -61,9 +64,8 @@ class ProbabilisticPCA:
         X_transform = np.zeros((X.shape[0],self.n_components))
 
         # Parameters of the Gaussians
-        M_inv = np.linalg.pinv(self.M)
-        transform_cov = self._sigma2 *  M_inv
-        transform_means = M_inv @ self.W.T @ (X-self.mean).T
+        transform_cov = self._sigma2 *  self.M_inv
+        transform_means = self.M_inv @ self.W.T @ (X-self.mean).T
 
         for i in range(X.shape[0]):
             X_transform[i] = np.random.multivariate_normal(transform_means[:,i],transform_cov)
@@ -72,3 +74,6 @@ class ProbabilisticPCA:
 
     def generate(self,n_samples):
         return np.random.multivariate_normal(self.mean,self.C,size=n_samples)
+    
+    def generate_transform(self,n_samples):
+        return self.transform(self.generate(n_samples=n_samples))

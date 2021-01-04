@@ -4,6 +4,8 @@ Implementation of Bayesian PCA based on the original paper by Bishop [1].
 
 This project was done as part of a course on Bayesian Learning, taught by [Remi Bardenet](http://rbardenet.github.io/) as part of the [Master Data Science](https://sciences-technologies.univ-lille.fr/mathematiques/formation/master-mention-sciences-des-donnees/) at the University of Lille.
 
+We implement the original PCA as a baseline, the probabilistic PCA [2] and Bayesian PCA [1].
+
 ## Install
 
 To install simply clone the project  :

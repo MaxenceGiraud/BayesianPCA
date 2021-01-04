@@ -53,7 +53,7 @@ class ProbabilisticPCA:
         self.W = eig_vec[:,eig_sort[:self.n_components]] @ np.sqrt(np.diag(eig_val[eig_sort[:self.n_components]])-self._sigma2*np.eye(self.n_components))
 
         self.C = self.W @ self.W.T + self._sigma2 * np.eye(X.shape[1]) # Observation Covariance
-        self.M_inv = np.linalg.inv(self.W.T @ self.W + self._sigma2 * np.eye(self.n_components))
+        self.M_inv = np.linalg.pinv(self.W.T @ self.W + self._sigma2 * np.eye(self.n_components))
     
 
     def fit_transform(self,X):

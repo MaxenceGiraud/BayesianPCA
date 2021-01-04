@@ -6,24 +6,18 @@ class BayesianPCA:
         self.eps = eps
     
     def _init_params(self,X):
-        sample_cov = 1/X.shape[0] * X.T @ X
-        eig_val,eig_vec = np.linalg.eig(sample_cov) # Compute eigenvalues/vectors
-        eig_sort = np.argsort(eig_val)[::-1]# Sort by eigenvalues and take the biggest n_components
-
-        self.sigma2 = eig_val.min()
-
-        self.W = eig_vec[:,eig_sort[:self.q]] @ np.sqrt(np.diag(eig_val[eig_sort[:self.q]])-self.sigma2*np.eye(self.q))
-
+        self.sigma2 = 1
+        self.W = np.random.randn(self.d, self.q)
 
     def _expectation_step(self,X):
         # Evaluation of the expected sufficient statistics of the latent-space posterior distribution
         self.M = self.W.T @ self.W +self.sigma2 * np.eye(self.q)
         self.x = np.linalg.pinv(self.M) @ self.W.T @ X.T
-        self.xxt = self.sigma2 * self.M + self.x    @ self.x.T
+        self.xxt = self.sigma2 * self.M + self.x @ self.x.T
 
     def _maximization_step(self,X):
         # Update of the model parameters
-        self.W =(X.T @ self.x.T) @ np.linalg.pinv(np.sum(self.xxt ,axis=0) + self.sigma2 * np.diag(self.alpha)) 
+        self.W =(X.T @ self.x.T) @ np.linalg.pinv(self.xxt + self.sigma2 * np.diag(self.alpha)) 
         self.sigma2 = (np.linalg.norm(X) - 2 * np.sum(self.x.T @ self.W.T @ X.T) + np.trace(self.xxt @ self.W.T @ self.W)) / (X.shape[0]*X.shape[1]) 
     
         self.alpha = self.d / np.linalg.norm(self.W,axis=0) # Re-estimation of alphas
@@ -58,12 +52,8 @@ class BayesianPCA:
         self.eff_dim = np.array([i for i, inv_alpha in enumerate(1/self.alpha) if inv_alpha < sum_alpha/self.q])
         self.qeff = len(self.eff_dim)
 
+        # Compute params for transform
         self.M_inv = np.linalg.pinv(self.W[:,self.eff_dim].T @ self.W[:,self.eff_dim] + self.sigma2 * np.eye(self.qeff))
-        # zero_norm = np.where(np.linalg.norm(self.W.T,axis=0) >1e-10,1,0)
-        # self.qeff = zero_norm.sum()
-
-        # self.W = self.W[:,1-zero_norm]
-        # self.alpha = self.alpha[1-zero_norm]
 
     
     def fit_transform(self,X):
@@ -71,6 +61,12 @@ class BayesianPCA:
         return self.transform(X)
 
     def transform(self,X):
-        
-        Z = self.M_inv @ self.W[:,self.eff_dim].T @ (X-self.mu).T
-        return Z
+        # Parameters of the Gaussians
+        transform_cov = self.sigma2 *  self.M_inv
+        transform_means = self.M_inv @ self.W[:,self.eff_dim].T @ (X-self.mu).T
+
+        X_transform = np.zeros((X.shape[0],self.qeff))
+        for i in range(X.shape[0]):
+            X_transform[i] = np.random.multivariate_normal(transform_means[:,i],transform_cov)
+
+        return X_transform

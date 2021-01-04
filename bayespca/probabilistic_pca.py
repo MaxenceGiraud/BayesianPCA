@@ -21,7 +21,7 @@ class ProbabilisticPCA:
         self.method = method
 
     def fit(self,X):
-        assert X.shape[1] > self.n_components, "Number of components must be at least d+1"
+        assert X.shape[1] > self.n_components, "Number of components must be at least d-1"
         # Normalize data
         self.mean =  X.mean(axis=0)
         X = (X -self.mean) 

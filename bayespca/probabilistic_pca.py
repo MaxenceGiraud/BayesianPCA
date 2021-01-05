@@ -44,8 +44,8 @@ class ProbabilisticPCA:
             self._maximization_step()
 
     def _fit_eig_decomp(self,X):
-        sample_cov = 1/X.shape[0] * X.T @ X
-        eig_val,eig_vec = np.linalg.eig(sample_cov) # Compute eigenvalues/vectors
+        S = 1/X.shape[0] * X.T @ X # Sample Covariance Matrix
+        eig_val,eig_vec = np.linalg.eig(S) # Compute eigenvalues/vectors
         eig_sort = np.argsort(eig_val)[::-1]# Sort by eigenvalues and take the biggest n_components
 
         self._sigma2 = 1/(X.shape[-1]-self.n_components) * np.sum(eig_val[eig_sort[-self.n_components:]])
@@ -77,3 +77,9 @@ class ProbabilisticPCA:
     
     def generate_transform(self,n_samples):
         return self.transform(self.generate(n_samples=n_samples))
+    
+    def _compute_log_likelihood(self,X):
+        S = 1/X.shape[0] * (X-self.mean).T @ (X-self.mean) # Sample Covariance matrix
+        l = np.sum(-X.shape[0]/2 * (X.shape[1]*np.log(2*np.pi) + np.log(abs(self.C) +np.trace(np.linalg.inv(self.C)@S)) ))
+
+        return l 

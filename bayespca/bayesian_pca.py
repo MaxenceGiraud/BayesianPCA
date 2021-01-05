@@ -6,7 +6,7 @@ class BayesianPCA:
         self.eps = eps
     
     def _init_params(self,X):
-        self.sigma2 = 1
+        self.sigma2 = 0
         self.W = np.random.randn(self.d, self.q)
 
     def _expectation_step(self,X):
@@ -18,9 +18,10 @@ class BayesianPCA:
     def _maximization_step(self,X):
         # Update of the model parameters
         self.W =(X.T @ self.x.T) @ np.linalg.pinv(self.xxt + self.sigma2 * np.diag(self.alpha)) 
-        self.sigma2 = (np.linalg.norm(X) - 2 * np.sum(self.x.T @ self.W.T @ X.T) + np.trace(self.xxt @ self.W.T @ self.W)) / (X.shape[0]*X.shape[1]) 
+        
+        self.sigma2 = (np.linalg.norm(X)**2 - 2 * np.sum(self.x.T @ self.W.T @ X.T) + np.trace(self.xxt @ self.W.T @ self.W)) / (X.shape[0]*X.shape[1]) 
     
-        self.alpha = self.d / np.linalg.norm(self.W,axis=0) # Re-estimation of alphas
+        self.alpha = self.d / np.linalg.norm(self.W,axis=0)**2 # Re-estimation of alphas
 
     def fit(self,X):
         self.d = X.shape[1]
@@ -47,9 +48,8 @@ class BayesianPCA:
 
             i+=1
 
-        # Find effective dimensionality
-        sum_alpha = np.sum(1/self.alpha)
-        self.eff_dim = np.array([i for i, inv_alpha in enumerate(1/self.alpha) if inv_alpha < sum_alpha/self.q])
+        # TODO : Find effective dimensionality correctly
+        self.eff_dim = np.arange(self.q)
         self.qeff = len(self.eff_dim)
 
         # Compute params for transform
@@ -70,3 +70,10 @@ class BayesianPCA:
             X_transform[i] = np.random.multivariate_normal(transform_means[:,i],transform_cov)
 
         return X_transform
+    
+    def _compute_log_likelihood(self,X):
+        C = self.W @ self.W.T + self.sigma2 * np.eye(X.shape[1]) # Observation Covariance
+        S = 1/X.shape[0] * (X-self.mu).T @ (X-self.mu) # Sample Covariance matrix
+        l = np.sum(-X.shape[0]/2 * (X.shape[1]*np.log(2*np.pi) + np.log(abs(C) +np.trace(np.linalg.inv(C)@S)) ))
+
+        return l 

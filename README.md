@@ -27,8 +27,8 @@ p.fit_transform(X)
 ## TODO
 - [x] Implement original PCA using SVD and eigen decomposition
 - [x] Probabilistic PCA (via eigendecomposition)
-- [ ] Implement EM algo to compute Probabilistic PCA
-- [ ] Bayesian PCA using EM
+- [x] Implement EM algo to compute Probabilistic PCA
+- [x] Bayesian PCA using EM
 - [ ] Build a mixture of probabilistic PCA
 - [ ] Build a mixture of Bayesian PCA
 

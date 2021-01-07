@@ -29,8 +29,9 @@ p.fit_transform(X)
 - [x] Probabilistic PCA (via eigendecomposition)
 - [x] Implement EM algo to compute Probabilistic PCA
 - [x] Bayesian PCA using EM
-- [ ] Build a mixture of probabilistic PCA
-- [ ] Build a mixture of Bayesian PCA
+- [x] Kernel PCA
+- [ ] Probabilistic Kernel PCA
+- [ ] Bayesian Kernel PCA
 
 ## References
 

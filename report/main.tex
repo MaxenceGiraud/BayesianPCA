@@ -12,6 +12,8 @@
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
 
+\usepackage[margin=1.5in]{geometry}
+
 \DeclareMathOperator*{\argmax}{arg\,max}
 \newcommand{\HRule}{\rule{\linewidth}{0.2mm}}
 
@@ -41,29 +43,48 @@
 \section{Introduction}
 
 \subsection{PCA}
-We consider a dataset $D$ contained in the matrix $\bf{X}$ with its columns representing the features and the rows the data points. For simplicity we will also consider that this data is centered ($\bf{x_i} = \bf{x_i} - \bar x$).
+We consider a dataset $D$ contained in the matrix $\mathbf{X}$ with its columns representing the features and the rows the data points (so it is an $N \times d$ matrix with $N$ datapoints and $d$ features). For simplicity we will also consider that this data is centered ($\mathbf{x_i} = \mathbf{x_i} - \bar x$).
 The conventional PCA starts by computing the sample covariance matrix : 
-$$ \bf{S} = \dfrac{1}{N} \bf{X}^T \bf{X}$$
+\begin{equation}
+    \mathbf{S} = \dfrac{1}{N} \mathbf{X}^T \mathbf{X} 
+    \label{sample_cov}
+\end{equation}
 
-We then compute the eigenvectors $\bf{u_i}$ and eigenvalues $\lambda_i$ of $\bf{S}$ such that : $\bf{S}\bf{u_i} =\bf{S}\lambda_i $.  We only retain the q (the desired dimensionality of the latent space) eigenvectors corresponding to the biggest eigenvalues. And so the new representation of the data is defined using $\bf{X_{new}} = \bf{U}^T \bf{X}$ with $\bf{U} = (\bf{u_1},...,\bf{u_q})$.
+
+We then compute the eigenvectors $\mathbf{u_i}$ and eigenvalues $\lambda_i$ of $\mathbf{S}$ such that : $\mathbf{S}\mathbf{u_i} =\mathbf{S}\lambda_i $.  We only retain the q (the desired dimensionality of the latent space) eigenvectors corresponding to the biggest eigenvalues. And so the new representation of the data is defined using $\mathbf{X_{new}} = \mathbf{U}^T \mathbf{X}$ with $\mathbf{U} = (\mathbf{u_1},...,\mathbf{u_q})$.
 
 \subsection{Probabilistic PCA}
 
-$$p(\mathbf{t})=\int p(\mathbf{t} \mid \mathbf{x}) p(\mathbf{x}) d \mathbf{x}=\mathcal{N}(\boldsymbol{\mu}, \mathbf{C})$$
+Tipping and Bishop \cite{tipping1999ppca} showed how PCA can be formulated in a probabilistic framework as the maximum likelihood solution of a specific latent variable model.\\
+In the first time they introduce a q-dimensionallatent variable $\mathbf{y}$ whose prior distribution is a zero mean Gaussian $p(y) = \mathcal{N}(0,\mathbf{I}_q) $ ($\mathbf{I}_q$ being the q-dimensional identity matrix). And so the observed variable $x$ (we still consider the observation are centered at 0) is defined as a linear transformation (represented by the $d \times q$ matrix $\mathbf{W}$) of $y$ with an additive Gaussian noise ($\epsilon \sim \mathcal{N}(0,\mathbf{I}_d$) )  : $p(\mathbf{x} \mid \mathbf{y}) = \mathbf{W} \mathbf{x} + \epsilon$.\\
+The marginal distribution of the observed variable is then given by the convolution of two Gaussians and so is itself Gaussian :
 
-PPCA \cite{tipping1999ppca}
+$$p(\mathbf{x})=\int p(\mathbf{x} \mid \mathbf{y}) p(\mathbf{y}) d \mathbf{y}=\mathcal{N}(0, \mathbf{C})$$
 
+with $\mathbf{C} = \mathbf{W} \mathbf{W}^T + \sigma^2 \mathbf{I}_d $. Then we can find the log likelihood of the model given by  :
+\begin{equation}
+    L\left(\mathbf{W}, \sigma^{2}\right)=-\frac{N}{2}\left\{d \ln (2 \pi)+\ln |\mathbf{C}|+\operatorname{Tr}\left[\mathbf{C}^{-1} \mathbf{S}\right]\right\}
+    \label{ll}
+\end{equation}
 
+The values of the model's parameters $\mathbf{W}$ and $\sigma$ can be found using multiple technic. We can find an analytical solution by maximizing \ref{ll} or one can use the EM algorithm. We will discuss this second solution more in depth with the Bayesian PCA formulation.
 
 \section{Bayesian PCA}
 
 
 \section{A Bayesian Kernel PCA}
 
+
+Main contribution of Bayesian PCA is its ability to find automatically the number of effective dimensions $q_{\text{eff}}$.
+
 \subsection{The Kernel PCA and the Kernel Trick}
 
-\subsection{Probabilistic view of Kernel PCA}
+The PCA allows us to compute a low-dimensional linear embedding of some data, however we may want to be able to also transform our data into a non-linear form. It is where the Kernel PCA comes into play.\\
+The original PCA is computed using a sample covariance matrix \ref{sample_cov}, but can also be found by replacing this matrix by the inner product matrix $\mathbf{X} \mathbf{X}^T$ (for more in depth explainations see section 14.4.4 of Murphy's A Probabilistic Perspective \cite{KevinP.Murphy17}). By using whats called the Kernel Trick we can replace the inner product by the Kernel $\mathbf{K}$ (we call $\mathbf{K} = \mathbf{X}\mathbf{X}^T$ the gram matrix), this allows us to work with non linear data without having to do the computations in a higher dimensional space.
 
+\subsection{Probabilistic view of the Kernel PCA}
+
+\cite{pkpca}
 
 \section{Experiments}
 My implementation : \url{https://github.com/MaxenceGiraud/BayesianPCA} 
@@ -75,3 +96,5 @@ Other continuation of the paper can be made : properly express the optimal dimen
 \bibliography{bayespca}
 
 \end{document}
+
+

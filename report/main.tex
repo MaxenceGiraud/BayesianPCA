@@ -1,0 +1,77 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\usepackage[square,numbers]{natbib}
+\bibliographystyle{abbrvnat}
+
+\usepackage{graphicx}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{algorithm}
+\usepackage{hyperref}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\HRule}{\rule{\linewidth}{0.2mm}}
+
+
+\begin{document}
+
+
+\begin{minipage}{\textwidth}
+    \begin{center}
+        \Large Bayesian Learning\\
+        \large Final Report\\
+        \HRule\\
+        \vspace{0.3cm}
+        {\huge \textbf{Bayesian PCA}}\\
+        \HRule\\
+        \vspace{1em}
+            \textbf{Maxence Giraud}\\
+            maxence.giraud.etu@univ-lille.fr\\
+    \end{center}
+\end{minipage}
+
+\begin{abstract}
+    In the paper "Bayesian PCA" by Bishop \cite{bishop1999bayesian}, the author describes how one can extend the technique of Principal Component Analysis (PCA) to a Bayesian formulation. In this paper we summarize this new formulation and try to extend it using a Kernel to make a Bayesian Kernel PCA.
+\end{abstract}
+
+
+\section{Introduction}
+
+\subsection{PCA}
+We consider a dataset $D$ contained in the matrix $\bf{X}$ with its columns representing the features and the rows the data points. For simplicity we will also consider that this data is centered ($\bf{x_i} = \bf{x_i} - \bar x$).
+The conventional PCA starts by computing the sample covariance matrix : 
+$$ \bf{S} = \dfrac{1}{N} \bf{X}^T \bf{X}$$
+
+We then compute the eigenvectors $\bf{u_i}$ and eigenvalues $\lambda_i$ of $\bf{S}$ such that : $\bf{S}\bf{u_i} =\bf{S}\lambda_i $.  We only retain the q (the desired dimensionality of the latent space) eigenvectors corresponding to the biggest eigenvalues. And so the new representation of the data is defined using $\bf{X_{new}} = \bf{U}^T \bf{X}$ with $\bf{U} = (\bf{u_1},...,\bf{u_q})$.
+
+\subsection{Probabilistic PCA}
+
+$$p(\mathbf{t})=\int p(\mathbf{t} \mid \mathbf{x}) p(\mathbf{x}) d \mathbf{x}=\mathcal{N}(\boldsymbol{\mu}, \mathbf{C})$$
+
+PPCA \cite{tipping1999ppca}
+
+
+
+\section{Bayesian PCA}
+
+
+\section{A Bayesian Kernel PCA}
+
+\subsection{The Kernel PCA and the Kernel Trick}
+
+\subsection{Probabilistic view of Kernel PCA}
+
+
+\section{Experiments}
+My implementation : \url{https://github.com/MaxenceGiraud/BayesianPCA} 
+
+\section{Conclusion}
+
+Other continuation of the paper can be made : properly express the optimal dimensionalanity (use conditional probabilities)...
+
+\bibliography{bayespca}
+
+\end{document}

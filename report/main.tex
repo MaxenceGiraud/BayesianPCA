@@ -12,7 +12,7 @@
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}
 
-\usepackage[margin=1.5in]{geometry}
+\usepackage[margin=1.2in]{geometry}
 
 \DeclareMathOperator*{\argmax}{arg\,max}
 \newcommand{\HRule}{\rule{\linewidth}{0.2mm}}
@@ -67,15 +67,73 @@ with $\mathbf{C} = \mathbf{W} \mathbf{W}^T + \sigma^2 \mathbf{I}_d $. Then we ca
     \label{ll}
 \end{equation}
 
-The values of the model's parameters $\mathbf{W}$ and $\sigma$ can be found using multiple technic. We can find an analytical solution by maximizing \ref{ll} or one can use the EM algorithm. We will discuss this second solution more in depth with the Bayesian PCA formulation.
+The values of the model's parameters $\mathbf{W}$ and $\sigma$ can be found using multiple methods. We can find an analytical solution by maximizing \ref{ll} or one can use the EM algorithm. We will discuss this second solution more in depth with the Bayesian PCA formulation.
 
 \section{Bayesian PCA}
 
+For the Bayesian PCA we take the same formulation as for the probabilistic PCA on which we are going to add a prior $p(\mathbf{W},\sigma)$ over the parameters of the model, here the likelihood is given by eq \ref{ll} (its logarithm more precisely) and so the posterior $p(\mathbf{W},\sigma\mid D)$ is the product of the two. Then we can obtain the predictive density by marginalizing over the parameters : $p(\mathbf{x} \mid D) = \int \int p(\mathbf{x} \mid \mathbf{W},\sigma) p(\mathbf{x} \mid D) d\mathbf{W} d \sigma$.\\
+
+The author states that the goal of his paper is to automatically find the effective dimensionality of the latent space (which is the number of principal components $q$ in the original PCA formulation), and so to do this he indroduces a hierachical prior over $\mathbf{W}$ conditionned by a vector $\mathbf{\alpha} = {\alpha_1,...,\alpha_q}$($q$ is set to the maximum possible value $d-1$ by default) that will control this dimensionality.\\
+This prior is of the form : 
+
+\begin{equation}
+    p(\mathbf{W} \mid \mathbf{\alpha}) = \prod_{i=1}^q (\frac{\alpha_i}{2 \pi})^{d/2} \exp(-\frac{1}{2} \alpha_i \| \mathbf{w}_i\|^2)
+    \label{w_prior}
+\end{equation}
+
+Here the $\alpha_i$ control the inverse variance of the corresponding $\mathbf{w}_i$ (columns of $\mathbf{W}$) so that if a particular $\alpha_i$ has a posterior distribution concentrated at large values, the related $\mathbf{w}_i$  will tend to be small, and so this component won't be used in the latent space.\\
+
+
+To use the Bayesian PCA, we should marginalize over the posterior of $\mathbf{W}$ (defined in \ref{w_prior}), but since it is not analytically feasible, the author proposes an alternative approache based on a type-II maximum likelihood using a local Gaussian approximation to a mode of the posterior distribution. \\
+We now want to find the location $\mathbf{W_{\text{MP}}}$ of the mode, which can be determined by maximizing the posterior distribution given by :
+
+\begin{equation}
+    \ln p(\mathbf{W} \mid D)=L-\frac{1}{2} \sum_{i=1}^{d-1} \alpha_{i}\left\|\mathbf{w}_{i}\right\|^{2}+\text { const }
+\end{equation}
+
+with L defined in \ref{ll}. Here the $\alpha_i$ are found through the maximum likelihood estimation, which yields : 
+\begin{equation}
+    \alpha_i = \frac{d}{\|\mathbf{w}_i\|^2}
+    \label{alpha}
+\end{equation}
+
+As we recall the $\alpha_i$ control the latent space dimensionality, and so the that vectors $\mathbf{w}_i$ for which there is  insufficient support from the data will be close to 0, and so the corresponding alpha will be driven to infinity.\\
+
+The author then proposes to use the following Expectation-Maximization algorithm (EM) to find $\mathbf{W}_{\text{MP}}$ :
+
+\begin{itemize}
+    \item Expectation step : 
+\end{itemize}
+\begin{equation}
+    \begin{aligned}
+        \langle\mathbf{Z}\rangle &=\mathbf{M}^{-1} \mathbf{W}^{\mathrm{T}} \mathbf{X} \\
+        \langle\mathbf{Z},\mathbf{Z}^T\rangle &=\sigma^{2} \mathbf{M}^{-1}+\langle\mathbf{Z}\rangle \langle\mathbf{Z}\rangle^T
+    \end{aligned}
+    \label{estep}
+\end{equation}
+
+with $\mathbf{M} = \mathbf{W}^T \mathbf{W} + \sigma^2 \mathbf{I}_q$.\\
+
+\begin{itemize}
+    \item Maximization step : 
+\end{itemize}
+
+\begin{equation}
+    \begin{aligned}
+        \widetilde \mathbf{W} &=\mathbf{X} \langle\mathbf{Z}\rangle [\langle\mathbf{Z},\mathbf{Z}^T\rangle + \sigma^2 \mathbf{A}]^{-1} \\
+        \tilde{ \sigma^2} &= \frac{1}{N d} \{ \|\mathbf{X}\|^2 -2  \langle\mathbf{Z}^T\rangle \widetilde \mathbf{W}^T \mathbf{X} + \operatorname{Tr}[\langle\mathbf{Z},\mathbf{Z}^T\rangle ] \widetilde \mathbf{W}^T \widetilde \mathbf{W} \}
+        \end{aligned}
+    \label{mstep}
+\end{equation}
+
+with $\mathbf{A}$ a diagonal matrix with the values of the $\alpha_i$ in its diagonal, and as the $\alpha_i$ are computed based on $\mathbf{W}$ they need to be re-evaluated at each step using \ref{alpha}.\\
+
+We can notice that we could use a very similar EM algorithm to solve the probabilistic PCA problem. It can be shown  \cite{tipping1999ppca} that the only modification we would have to make would be to remove the $\sigma^2 \mathbf{A}$ term in the computation of $\widetilde \mathbf{W}$.\\
+
+
+As we can easily guess, the main contribution of Bayesian PCA is its ability to find automatically the number of effective dimensions $q_{\text{eff}}$. Now an interesting question we could ask ourselves would be how to transpose this paradigm with the Kernel PCA decomposition algorithm.
 
 \section{A Bayesian Kernel PCA}
-
-
-Main contribution of Bayesian PCA is its ability to find automatically the number of effective dimensions $q_{\text{eff}}$.
 
 \subsection{The Kernel PCA and the Kernel Trick}
 
@@ -96,5 +154,3 @@ Other continuation of the paper can be made : properly express the optimal dimen
 \bibliography{bayespca}
 
 \end{document}
-
-

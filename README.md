@@ -36,5 +36,4 @@ p.fit_transform(X)
 ## References
 
 [1] Bishop, C. M. (1999). Bayesian PCA. MIT Press.     
-[2] Tipping, M. E . and C. M. Bishop (1997). Probabilistic principal component analysis. Journal of the Royal Statistical Society, B.          
-[3] Tipping, M. E. and C. M. Bishop (1997). Mixtures of principal component analysers. In Proceedings lEE Fifth International Conference on Artificial Neural Networks.Cambridge, U.K., July. , pp. 13-18.
+[2] Tipping, M. E . and C. M. Bishop (1997). Probabilistic principal component analysis. Journal of the Royal Statistical Society, B.         

@@ -4,22 +4,16 @@
 \usepackage[square,numbers]{natbib}
 \bibliographystyle{abbrvnat}
 
-\usepackage{graphicx}
 \usepackage{amsthm}
 \usepackage{amsmath}
-\usepackage{algorithm}
 \usepackage{hyperref}
-\usepackage{algorithm}
-\usepackage[noend]{algpseudocode}
 
 \usepackage[margin=1.2in]{geometry}
 
 \DeclareMathOperator*{\argmax}{arg\,max}
 \newcommand{\HRule}{\rule{\linewidth}{0.2mm}}
 
-
 \begin{document}
-
 
 \begin{minipage}{\textwidth}
     \begin{center}
@@ -56,7 +50,7 @@ We then compute the eigenvectors $\mathbf{u_i}$ and eigenvalues $\lambda_i$ of $
 \subsection{Probabilistic PCA}
 
 Tipping and Bishop \cite{tipping1999ppca} showed how PCA can be formulated in a probabilistic framework as the maximum likelihood solution of a specific latent variable model.\\
-In the first time they introduce a q-dimensionallatent variable $\mathbf{y}$ whose prior distribution is a zero mean Gaussian $p(y) = \mathcal{N}(0,\mathbf{I}_q) $ ($\mathbf{I}_q$ being the q-dimensional identity matrix). And so the observed variable $x$ (we still consider the observation are centered at 0) is defined as a linear transformation (represented by the $d \times q$ matrix $\mathbf{W}$) of $y$ with an additive Gaussian noise ($\epsilon \sim \mathcal{N}(0,\mathbf{I}_d$) )  : $p(\mathbf{x} \mid \mathbf{y}) = \mathbf{W} \mathbf{x} + \epsilon$.\\
+In the first time they introduce a q-dimensionallatent variable $\mathbf{y}$ whose prior distribution is a zero mean Gaussian $p(y) = \mathcal{N}(0,\mathbf{I}_q) $ ($\mathbf{I}_q$ being the q-dimensional identity matrix). And so the observed variable $x$ (we still consider the observation are centered at 0) is defined as a linear transformation (represented by the $d \times q$ matrix $\mathbf{W}$) of $y$ with an additive Gaussian noise ($\epsilon \sim \mathcal{N}(0,\mathbf{I}_d$) )  : $p(\mathbf{x} \mid \mathbf{y}) = \mathbf{W} \mathbf{y} + \epsilon$.\\
 The marginal distribution of the observed variable is then given by the convolution of two Gaussians and so is itself Gaussian :
 
 $$p(\mathbf{x})=\int p(\mathbf{x} \mid \mathbf{y}) p(\mathbf{y}) d \mathbf{y}=\mathcal{N}(0, \mathbf{C})$$
@@ -114,6 +108,7 @@ The author then proposes to use the following Expectation-Maximization algorithm
 
 with $\mathbf{M} = \mathbf{W}^T \mathbf{W} + \sigma^2 \mathbf{I}_q$.\\
 
+\emph{N.B. : In his original paper Bishop wrote $\langle\mathbf{Z},\mathbf{Z}^T\rangle$ depending on $\mathbf{M}$ and not $\mathbf{M}^{-1}$, this is a mistake that has been corected in the following works.}
 \begin{itemize}
     \item Maximization step : 
 \end{itemize}
@@ -138,11 +133,26 @@ As we can easily guess, the main contribution of Bayesian PCA is its ability to 
 \subsection{The Kernel PCA and the Kernel Trick}
 
 The PCA allows us to compute a low-dimensional linear embedding of some data, however we may want to be able to also transform our data into a non-linear form. It is where the Kernel PCA comes into play.\\
-The original PCA is computed using a sample covariance matrix \ref{sample_cov}, but can also be found by replacing this matrix by the inner product matrix $\mathbf{X} \mathbf{X}^T$ (for more in depth explainations see section 14.4.4 of Murphy's A Probabilistic Perspective \cite{KevinP.Murphy17}). By using whats called the Kernel Trick we can replace the inner product by the Kernel $\mathbf{K}$ (we call $\mathbf{K} = \mathbf{X}\mathbf{X}^T$ the gram matrix), this allows us to work with non linear data without having to do the computations in a higher dimensional space.
+The original PCA is computed using a sample covariance matrix \ref{sample_cov}, but can also be found by replacing this matrix by the inner product matrix \cite{KevinP.Murphy17} $\mathbf{X} \mathbf{X}^T$ :
+
+$$ S = \frac{1}{N} \mathbf{X}^T \mathbf{H} \mathbf{H} \mathbf{X}, \text{ with }  \mathbf{H} = \mathbf{I}_N -\frac{1}{N} \mathbf{1}_N \mathbf{1}_N^T
+$$
+
+Since this covariance Matrix has the same (non zero) eigenvalues as $\frac{1}{N} \mathbf{H}  \mathbf{X}^T \mathbf{X} \mathbf{H}$,by using whats called the Kernel Trick we can replace the inner product by the Kernel $\mathbf{K}$ (we call $\mathbf{K} = \mathbf{X}\mathbf{X}^T$ the gram matrix), this allows us to work with non linear data without having to do the computations in a higher dimensional space.
 
 \subsection{Probabilistic view of the Kernel PCA}
 
 \cite{pkpca}
+
+\begin{equation}
+    \begin{aligned}
+        \widetilde{ \mathbf{W}} &= \mathbf{H} \mathbf{K} \mathbf{H} \mathbf{W} (d \sigma^2 \mathbf{I}_q + \mathbf{M}^-1 \mathbf{W}^T \mathbf{H} \mathbf{K} \mathbf{H} \mathbf{W})^{-1} \\
+        \widetilde{ \sigma^2 } &= \frac{1}{N^2} ( \operatorname{Tr}(\mathbf{H} \mathbf{K} \mathbf{H}) - \mathbf{H} \mathbf{K} \mathbf{H} \mathbf{W} \mathbf{M}^{-1} \widetilde{ \mathbf{W}} )
+    \end{aligned}
+    \label{em_pkpca}
+\end{equation}
+
+(re-estimate M at each iter also)
 
 \section{Experiments}
 My implementation : \url{https://github.com/MaxenceGiraud/BayesianPCA} 

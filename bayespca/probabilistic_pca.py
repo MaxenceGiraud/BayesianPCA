@@ -1,5 +1,4 @@
 import numpy as np
-from sklearn.exceptions import NotFittedError
 
 class ProbabilisticPCA:
     ''' Probabilistic PCA 
@@ -46,10 +45,11 @@ class ProbabilisticPCA:
         self.xxt = self.sigma2 * self.M_inv + self.x @ self.x.T
 
     def _maximization_step(self,X):
+        old_w = self.W
         # Update of the model parameters
         self.W =(X.T @ self.x.T) @ np.linalg.pinv(self.xxt)
-        
-        self.sigma2 = (np.linalg.norm(X)**2 - 2 * np.sum(self.x.T @ self.W.T @ X.T) + np.trace(self.xxt @ self.W.T @ self.W)) / (X.shape[0]*X.shape[1]) 
+
+        self.sigma2 = np.trace(X +  X @ old_w @ self.M_inv @ self.W.T)/ (X.shape[0]*X.shape[1]) 
     
 
     def _fit_em(self,X):

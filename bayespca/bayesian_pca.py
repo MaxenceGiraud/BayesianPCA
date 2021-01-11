@@ -20,7 +20,7 @@ class BayesianPCA:
     def _maximization_step(self,X):
         old_w = self.W
         # Update of the model parameters
-        self.W =(X.T @ self.x.T) @ np.linalg.pinv(self.xxt + self.sigma2 * np.diag(self.alpha)) 
+        self.W =(X.T @ self.x.T) @ np.linalg.pinv(self.xxt +self.sigma2 * (np.diag(self.alpha) + np.eye(self.q))) 
         
         self.sigma2 = np.trace(X +  X @ old_w @ self.M_inv @ self.W.T)/ (X.shape[0]*X.shape[1]) 
     
@@ -37,8 +37,7 @@ class BayesianPCA:
 
         i = 0
         old_norm_w = np.zeros(self.q)
-        while i < self.max_iter  and np.any(abs(np.linalg.norm(self.W,axis=0) - old_norm_w) > self.eps):
-            print(i)
+        while i < self.max_iter :# and np.any(abs(np.linalg.norm(self.W,axis=0) - old_norm_w) > self.eps):
             
             old_norm_w = np.linalg.norm(self.W,axis=0)
 

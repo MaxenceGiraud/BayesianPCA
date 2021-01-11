@@ -27,8 +27,8 @@ class ProbabilisticKernelPCA:
         while i < self.max_iter :
             old_W = self.W
           
-            self.W = H @ self.K @ H @ self.W @ np.linalg.inv( N * self.sigma2 * np.eye(self.q) + self.M_inv @ self.W.T @ H @ self.K @ H @ self.W)
-
+            self.W = H @ self.K @ H @ self.W @ np.linalg.inv( self.M_inv @ self.W.T @ H @ self.K @ H @ self.W)
+            # start inv :  self.d * self.sigma2 * np.eye(self.q) +
             self.sigma2 = 1/N**2 * np.trace(H @ self.K @ H - H @ self.K @ H @ old_W @ self.M_inv @ self.W.T)
 
             self.M_inv = np.linalg.inv(self.W.T @ self.W + self.sigma2 + np.eye(self.q))

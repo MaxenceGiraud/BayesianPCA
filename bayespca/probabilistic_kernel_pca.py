@@ -48,8 +48,9 @@ class ProbabilisticKernelPCA:
         self.sigma2 = 1/(self.d-self.q) * np.sum(eig_val[eig_sort[-self.q:]])
 
         self.W = eig_vec[:,eig_sort[:self.q]] @ np.sqrt(np.diag(eig_val[eig_sort[:self.q]])-self.sigma2*np.eye(self.q))
+        self.W = np.real_if_close(self.W) # Take real part if casted to complex values (only 0 imaginary part, simply the type of the object)
 
-        self.M_inv = np.linalg.inv(self.W.T @ self.W + self.sigma2 + np.eye(self.q))
+        self.M_inv = np.real_if_close(np.linalg.inv(self.W.T @ self.W + self.sigma2 + np.eye(self.q)))
 
 
 

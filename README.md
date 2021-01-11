@@ -1,10 +1,8 @@
-# BayesianPCA
-
-Implementation of Bayesian PCA based on the original paper by Bishop [1].
-
-This project was done as part of a course on Bayesian Learning, taught by [Remi Bardenet](http://rbardenet.github.io/) as part of the [Master Data Science](https://sciences-technologies.univ-lille.fr/mathematiques/formation/master-mention-sciences-des-donnees/) at the University of Lille.
+# Bayesian PCA
 
 We implement the original PCA as a baseline, the probabilistic PCA [2] and Bayesian PCA [1]. We then also try to extend the bayesian formulation to the kernel PCA based also on the work on the Probabilistic Kernel PCA [3].
+
+This project was done as part of a course on Bayesian Learning, taught by [Remi Bardenet](http://rbardenet.github.io/) as part of the [Master Data Science](https://sciences-technologies.univ-lille.fr/mathematiques/formation/master-mention-sciences-des-donnees/) at the University of Lille.
 
 A notebook is available with the conducted experiments ([here](./experiments.ipynb)).
 

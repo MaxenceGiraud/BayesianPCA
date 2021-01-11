@@ -100,23 +100,23 @@ The author then proposes to use the following Expectation-Maximization algorithm
 \end{itemize}
 \begin{equation}
     \begin{aligned}
-        \langle\mathbf{Z}\rangle &=\mathbf{M}^{-1} \mathbf{W}^{\mathrm{T}} \mathbf{X} \\
-        \langle\mathbf{Z},\mathbf{Z}^T\rangle &=\sigma^{2} \mathbf{M}^{-1}+\langle\mathbf{Z}\rangle \langle\mathbf{Z}\rangle^T
+        \langle\mathbf{Y}\rangle &=\mathbf{M}^{-1} \mathbf{W}^{\mathrm{T}} \mathbf{X} \\
+        \langle\mathbf{Y},\mathbf{Y}^T\rangle &=\sigma^{2} \mathbf{M}^{-1}+\langle\mathbf{Y}\rangle \langle\mathbf{Y}\rangle^T
     \end{aligned}
     \label{estep}
 \end{equation}
 
 with $\mathbf{M} = \mathbf{W}^T \mathbf{W} + \sigma^2 \mathbf{I}_q$.\\
 
-\emph{N.B. : In his original paper Bishop wrote $\langle\mathbf{Z},\mathbf{Z}^T\rangle$ depending on $\mathbf{M}$ and not $\mathbf{M}^{-1}$, this is a mistake that has been corected in the following works.}
+\emph{N.B. : In his original paper Bishop wrote $\langle\mathbf{Y},\mathbf{Y}^T\rangle$ depending on $\mathbf{M}$ and not $\mathbf{M}^{-1}$, this is a mistake that has been corected in the latter works by Bishop and others.}
 \begin{itemize}
     \item Maximization step : 
 \end{itemize}
 
 \begin{equation}
     \begin{aligned}
-        \widetilde \mathbf{W} &=\mathbf{X} \langle\mathbf{Z}\rangle [\langle\mathbf{Z},\mathbf{Z}^T\rangle + \sigma^2 \mathbf{A}]^{-1} \\
-        \tilde{ \sigma^2} &= \frac{1}{N d} \{ \|\mathbf{X}\|^2 -2  \langle\mathbf{Z}^T\rangle \widetilde \mathbf{W}^T \mathbf{X} + \operatorname{Tr}[\langle\mathbf{Z},\mathbf{Z}^T\rangle ] \widetilde \mathbf{W}^T \widetilde \mathbf{W} \}
+        \widetilde \mathbf{W} &=\mathbf{X} \langle\mathbf{Y}\rangle [\langle\mathbf{Y},\mathbf{Y}^T\rangle + \sigma^2 \mathbf{A}]^{-1} \\
+        \tilde{ \sigma^2} &= \frac{1}{N d} \{ \|\mathbf{X}\|^2 -2  \langle\mathbf{Y}^T\rangle \widetilde \mathbf{W}^T \mathbf{X} + \operatorname{Tr}[\langle\mathbf{Y},\mathbf{Y}^T\rangle ] \widetilde \mathbf{W}^T \widetilde \mathbf{W} \}
         \end{aligned}
     \label{mstep}
 \end{equation}
@@ -142,17 +142,85 @@ Since this covariance Matrix has the same (non zero) eigenvalues as $\frac{1}{N}
 
 \subsection{Probabilistic view of the Kernel PCA}
 
-\cite{pkpca}
+
+We still assume as with probabilistic PCA that $ \mathbf{X} = \mathbf{W} \mathbf{Y} + \epsilon$ ,  and so we can obtain \cite{pkpca} :
+
+\begin{equation}
+    p(\mathbf{X} \mid \mathbf{Y}) = \mathcal{N}(\mathbf{W} \mathbf{Y},N \sigma^2 (\mathbf{I}_N \otimes \mathbf{I}_q ) )  
+\end{equation}
+
+In addition, using Bayes’ rule, we can compute the conditional distribution of $\mathbf{Y}$ given $\mathbf{X}$. That is, it follows a multivariate normal distribution:
+
+\begin{equation}
+    p(\mathbf{Y} \mid \mathbf{X}) =  \mathcal{N}(\mathbf{M}^{-1} \mathbf{W}^T \mathbf{X}, N \sigma^2 \mathbf{M}^{-1} \otimes \mathbf{I}_N)
+\end{equation}
+
+with similarly as classic PCA, $\mathbf{M} = \mathbf{W}^T \mathbf{W} + \sigma^2 \mathbf{I}_q $.\\
+
+We can then formulate the full likelihood of our model :
 
 \begin{equation}
     \begin{aligned}
-        \widetilde{ \mathbf{W}} &= \mathbf{H} \mathbf{K} \mathbf{H} \mathbf{W} (d \sigma^2 \mathbf{I}_q + \mathbf{M}^-1 \mathbf{W}^T \mathbf{H} \mathbf{K} \mathbf{H} \mathbf{W})^{-1} \\
+        L &=  \log p(\mathbf{Y},\mathbf{X})\\
+        &=  \log p(\mathbf{X} \mid \mathbf{Y}) + \log p(\mathbf{Y}) \\
+        &= - \frac{N}{2}  \log \sigma^2  - \frac{1}{2N} \operatorname{Tr}(\mathbf{Y} \mathbf{Y}^T) -  \frac{1}{N \sigma^2} \operatorname{Tr}((\mathbf{X} - \mathbf{W} \mathbf{Y})(\mathbf{X} - \mathbf{W} \mathbf{Y})^T)
+    \end{aligned}
+    \label{log_pkpca}
+\end{equation}
+
+where we have omitted the terms independent of the model parameters. It is easy to find that $\mathbf{Y}$ and $\mathbf{Y} \mathbf{Y}^T$ are the complete-data sufficient statistics for $\mathbf{W}$ and $\sigma^2$ . \\
+
+
+EM Algo :
+\begin{itemize}
+    \item E-step :
+\end{itemize}
+
+\begin{equation}
+    \begin{aligned}
+        \langle \rangle &= \mathbf{M}^{-1} \mathbf{W}^T \mathbf{X} \\
+        \langle , \rangle &= N \sigma^2 \mathbf{M}^{-1} + \mathbf{M}^{-1} \mathbf{W}^T \mathbf{H} \mathbf{K} \mathbf{H} \mathbf{W} \mathbf{M}^{-1} 
+    \end{aligned}
+    \label{e_step_pkpca}
+\end{equation}
+
+\begin{itemize}
+    \item M-step : 
+\end{itemize}
+
+\begin{equation}
+    \begin{aligned}
+        \widetilde{ \mathbf{W}} &= \mathbf{X} \langle \rangle  (\langle , \rangle)^{-1} \\
+        \widetilde{ \sigma^2 } &= \frac{1}{N^2} (\operatorname{Tr}(\mathbf{H} \mathbf{K} \mathbf{H})  + \operatorname{Tr}( \langle , \rangle \widetilde \mathbf{W}^T \widetilde \mathbf{W} -2 \operatorname{Tr}(\widetilde{ \mathbf{W}} \langle \rangle \mathbf{X})) 
+    \end{aligned}
+    \label{m_step_pkpca}
+\end{equation}
+
+
+Substituting $\langle \rangle$ and $\langle , \rangle$ from the Expectation step \ref{e_step_pkpca} into the Maximization step \ref{m_step_pkpca}, we can combine the two into one :
+
+\begin{equation}
+    \begin{aligned}
+        \widetilde{ \mathbf{W}} &= \mathbf{H} \mathbf{K} \mathbf{H} \mathbf{W} (N \sigma^2 \mathbf{I}_q + \mathbf{M}^-1 \mathbf{W}^T \mathbf{H} \mathbf{K} \mathbf{H} \mathbf{W})^{-1} \\
         \widetilde{ \sigma^2 } &= \frac{1}{N^2} ( \operatorname{Tr}(\mathbf{H} \mathbf{K} \mathbf{H}) - \mathbf{H} \mathbf{K} \mathbf{H} \mathbf{W} \mathbf{M}^{-1} \widetilde{ \mathbf{W}} )
     \end{aligned}
     \label{em_pkpca}
 \end{equation}
 
-(re-estimate M at each iter also)
+with a re-estimation of M at each iteration. \\
+
+
+For a fully bayesian view of Kernel PCA with the same objective as for the original Bayesian PCA introduced by Bishop, we can follow the same reasonning and we end up with a similar EM algorithm to compute it : 
+
+\begin{equation}
+    \begin{aligned}
+        \widetilde{ \mathbf{W}} &= \mathbf{H} \mathbf{K} \mathbf{H} \mathbf{W} (N \sigma^2 \mathbf{A} + \mathbf{M}^-1 \mathbf{W}^T \mathbf{H} \mathbf{K} \mathbf{H} \mathbf{W} )^{-1} \\
+        \widetilde{ \sigma^2 } &= \frac{1}{N^2} ( \operatorname{Tr}(\mathbf{H} \mathbf{K} \mathbf{H}) - \mathbf{H} \mathbf{K} \mathbf{H} \mathbf{W} \mathbf{M}^{-1} \widetilde{ \mathbf{W}} )
+    \end{aligned}
+    \label{em_pkpca}
+\end{equation}
+
+with again the diagonal matrix $\mathbf{A}$ with for the diagonal the $\alpha_i$ estimated as before.
 
 \section{Experiments}
 My implementation : \url{https://github.com/MaxenceGiraud/BayesianPCA} 

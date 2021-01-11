@@ -7,6 +7,9 @@
 \usepackage{amsthm}
 \usepackage{amsmath}
 \usepackage{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{graphicx}
 
 \usepackage[margin=1.2in]{geometry}
 
@@ -67,7 +70,7 @@ The values of the model's parameters $\mathbf{W}$ and $\sigma$ can be found usin
 
 For the Bayesian PCA we take the same formulation as for the probabilistic PCA on which we are going to add a prior $p(\mathbf{W},\sigma)$ over the parameters of the model, here the likelihood is given by eq \ref{ll} (its logarithm more precisely) and so the posterior $p(\mathbf{W},\sigma\mid D)$ is the product of the two. Then we can obtain the predictive density by marginalizing over the parameters : $p(\mathbf{x} \mid D) = \int \int p(\mathbf{x} \mid \mathbf{W},\sigma) p(\mathbf{x} \mid D) d\mathbf{W} d \sigma$.\\
 
-The author states that the goal of his paper is to automatically find the effective dimensionality of the latent space (which is the number of principal components $q$ in the original PCA formulation), and so to do this he indroduces a hierachical prior over $\mathbf{W}$ conditionned by a vector $\mathbf{\alpha} = {\alpha_1,...,\alpha_q}$($q$ is set to the maximum possible value $d-1$ by default) that will control this dimensionality.\\
+The author states that the goal of his paper is to automatically find the effective dimensionality of the latent space (which is the number of principal components $q$ in the original PCA formulation), and so to do this he indroduces a hierarchical prior over $\mathbf{W}$ conditionned by a vector $\mathbf{\alpha} = {\alpha_1,...,\alpha_q}$($q$ is set to the maximum possible value $d-1$ by default) that will control this dimensionality.\\
 This prior is of the form : 
 
 \begin{equation}
@@ -83,6 +86,7 @@ We now want to find the location $\mathbf{W_{\text{MP}}}$ of the mode, which can
 
 \begin{equation}
     \ln p(\mathbf{W} \mid D)=L-\frac{1}{2} \sum_{i=1}^{d-1} \alpha_{i}\left\|\mathbf{w}_{i}\right\|^{2}+\text { const }
+    \label{posterior}
 \end{equation}
 
 with L defined in \ref{ll}. Here the $\alpha_i$ are found through the maximum likelihood estimation, which yields : 
@@ -171,15 +175,16 @@ We can then formulate the full likelihood of our model :
 where we have omitted the terms independent of the model parameters. It is easy to find that $\mathbf{Y}$ and $\mathbf{Y} \mathbf{Y}^T$ are the complete-data sufficient statistics for $\mathbf{W}$ and $\sigma^2$ . \\
 
 
-EM Algo :
+We can then a similar EM algorithm as for Probabilistic PCA to find the solution of our problem :
+
 \begin{itemize}
     \item E-step :
 \end{itemize}
 
 \begin{equation}
     \begin{aligned}
-        \langle \rangle &= \mathbf{M}^{-1} \mathbf{W}^T \mathbf{X} \\
-        \langle , \rangle &= N \sigma^2 \mathbf{M}^{-1} + \mathbf{M}^{-1} \mathbf{W}^T \mathbf{H} \mathbf{K} \mathbf{H} \mathbf{W} \mathbf{M}^{-1} 
+        \langle \mathbf{Y} \rangle &= \mathbf{M}^{-1} \mathbf{W}^T \mathbf{X} \\
+        \langle \mathbf{Y},\mathbf{Y}^T \rangle &= N \sigma^2 \mathbf{M}^{-1} + \mathbf{M}^{-1} \mathbf{W}^T \mathbf{H} \mathbf{K} \mathbf{H} \mathbf{W} \mathbf{M}^{-1} 
     \end{aligned}
     \label{e_step_pkpca}
 \end{equation}
@@ -190,14 +195,14 @@ EM Algo :
 
 \begin{equation}
     \begin{aligned}
-        \widetilde{ \mathbf{W}} &= \mathbf{X} \langle \rangle  (\langle , \rangle)^{-1} \\
-        \widetilde{ \sigma^2 } &= \frac{1}{N^2} (\operatorname{Tr}(\mathbf{H} \mathbf{K} \mathbf{H})  + \operatorname{Tr}( \langle , \rangle \widetilde \mathbf{W}^T \widetilde \mathbf{W} -2 \operatorname{Tr}(\widetilde{ \mathbf{W}} \langle \rangle \mathbf{X})) 
+        \widetilde{ \mathbf{W}} &= \mathbf{X} \langle \mathbf{Y} \rangle  (\langle \mathbf{Y}, \mathbf{Y}^T \rangle)^{-1} \\
+        \widetilde{ \sigma^2 } &= \frac{1}{N^2} (\operatorname{Tr}(\mathbf{H} \mathbf{K} \mathbf{H})  + \operatorname{Tr}( \langle \mathbf{Y}, \mathbf{Y}^T \rangle \widetilde \mathbf{W}^T \widetilde \mathbf{W} -2 \operatorname{Tr}(\widetilde{ \mathbf{W}} \langle \mathbf{Y}\rangle \mathbf{X})) 
     \end{aligned}
     \label{m_step_pkpca}
 \end{equation}
 
 
-Substituting $\langle \rangle$ and $\langle , \rangle$ from the Expectation step \ref{e_step_pkpca} into the Maximization step \ref{m_step_pkpca}, we can combine the two into one :
+Substituting $\langle \mathbf{Y} \rangle$ and $\langle \mathbf{Y},\mathbf{Y}^T \rangle$ from the Expectation step \ref{e_step_pkpca} into the Maximization step \ref{m_step_pkpca}, we can combine the two into one :
 
 \begin{equation}
     \begin{aligned}
@@ -210,7 +215,10 @@ Substituting $\langle \rangle$ and $\langle , \rangle$ from the Expectation step
 with a re-estimation of M at each iteration. \\
 
 
-For a fully bayesian view of Kernel PCA with the same objective as for the original Bayesian PCA introduced by Bishop, we can follow the same reasonning and we end up with a similar EM algorithm to compute it : 
+\subsection{Introducing a Bayesian Kernel PCA}
+
+For a fully bayesian view of Kernel PCA with the same objective as for the original Bayesian PCA introduced by Bishop, we can follow the same reasonning by putting the same hierarchical prior $p(\mathbf{W} \mid \mathbf{\alpha})$ over $\mathbf{W}$ as in \ref{w_prior}. We then have to maximize the log posterior given by \ref{posterior} with this time L given by \ref{log_pkpca}. This leads to the same re-estimation of the  $\alpha_i$ given in \ref{alpha}.\\
+We can then derive a similar EM algorithm to compute the solution : 
 
 \begin{equation}
     \begin{aligned}
@@ -223,7 +231,51 @@ For a fully bayesian view of Kernel PCA with the same objective as for the origi
 with again the diagonal matrix $\mathbf{A}$ with for the diagonal the $\alpha_i$ estimated as before.
 
 \section{Experiments}
-My implementation : \url{https://github.com/MaxenceGiraud/BayesianPCA} 
+
+We have implementated all the algorithms presented in this paper and are available in the following github repository : \url{https://github.com/MaxenceGiraud/BayesianPCA}. \\
+
+We used this \href{https://archive.ics.uci.edu/ml/datasets/Iris/}{iris dataset} to conduct our experiments. The variability can be captured using only 1 dimension. We found similar results when using both methods to solve the PPCA problem (EM and closed form solution). As for the Bayesian PCA we found that it discovers the  correct effective number of dimension, as we can see by visualization the hinton diagram of the $\mathbf{W}$ matrix in figure \ref{fig:hinton_pca}.\\
+
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=.4\linewidth]{img/hinton_ppca.png}
+      \caption{Probabilistic PCA}
+      \label{fig:ppca_hinton}
+    \end{subfigure}%
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=.4\linewidth]{img/hinton_bayesian.png}
+      \caption{Bayesian PCA}
+      \label{fig:bayes_hinton}
+    \end{subfigure}
+    \caption{Hinton diagrams $\mathbf{W}$ matrix of PPCA and Bayesian PCA}
+    \label{fig:hinton_pca}
+\end{figure}
+
+We repeated the same experiments with kernel alternative of PCA. We found again similar results for both methods of Probabilistic Kernel PCA  (up to a rotation) and also found that a Linear Kernel would yield similar results as the standard PCA as expected.\\
+The Bayesian Kernel PCA also discovers the correct effective number of dimensions, but we can see also see in \ref{fig:pkpca_hinton} that the "simple" probabilistic formulation of the Kernel PCA also shuts off non effective dimensions of the latent space.\\
+An interesting follow up to this project would be trying to understand how the probabilistic Kernel PCA shuts off the dimensions and does not show the same behavior as probabilistic PCA.
+
+\begin{figure}[ht]
+    \centering
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=.8\linewidth]{img/hinton_pkpca.png}
+      \caption{Probabilistic Kernel PCA}
+      \label{fig:pkpca_hinton}
+    \end{subfigure}%
+    \begin{subfigure}{.5\textwidth}
+      \centering
+      \includegraphics[width=.8\linewidth]{img/hinton_bkpca.png}
+      \caption{Bayesian Kernel PCA}
+      \label{fig:bayesk_hinton}
+    \end{subfigure}
+    \caption{Hinton diagrams $\mathbf{W}$ matrix of PKPCA and Bayesian Kernel PCA}
+    \label{fig:hinton_kpca}
+\end{figure}
 
 \section{Conclusion}
 

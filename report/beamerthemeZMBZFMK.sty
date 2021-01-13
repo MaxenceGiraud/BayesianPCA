@@ -1,0 +1,85 @@
+\ProvidesPackage{beamerthemeZMBZFMK}[2017/11/09 beamerthemeZMBZFMK]
+
+% Copyright 2003 by Till Tantau <tantau@users.sourceforge.net>
+%
+% This program can be redistributed and/or modified under the terms
+% of the GNU Public License, version 2.
+
+% Adapted by Christoph Mayer, ZMB/ZFMK
+
+%\usepackage[latin1]{inputenc}
+\setlength{\unitlength}{1cm}
+\DeclareOptionBeamer{compress}{\beamer@compresstrue}
+\ProcessOptionsBeamer
+
+\mode<presentation>
+
+\usetheme{Boadilla}
+\useoutertheme[footline=authorinstitutetitle]{miniframes}
+\useinnertheme{rectangles}
+\usecolortheme{seagull}
+\usecolortheme{ZMBZFMK}
+
+\let\Tiny=\tiny
+
+\setbeamertemplate{blocks}[rounded]
+
+\setbeamertemplate{frametitle}
+ 	{ 
+  \begin{minipage}[c]{\columnwidth}
+    \begin{picture}(12.8,0.7651)(0,0)
+      \put(-0.2,1.4){           \begin{beamercolorbox}[wd=\textwidth,left
+ ]{frametitle}
+             \usebeamerfont{frametitle}
+             \usebeamercolor[fg]{frametitle} {\bf \insertframetitle}
+           \end{beamercolorbox}}
+    \end{picture}
+  \end{minipage}
+  \vspace{-1cm}
+ 	}
+
+% Definition Kopfleiste
+
+\setbeamertemplate{headline}
+{
+  \vspace{0.1cm}
+  \begin{minipage}[c]{\columnwidth}
+    \begin{picture}(12.8,0.7651)(0,0)
+      \put(10.0,-0.02){\includegraphics[width=2.5cm]{logo.png}}
+      %\put(11.3,0){\includegraphics[width=1.4cm]{logo-cd.pdf}}
+      \put(5.761,0.02){ %9.5
+        \begin{minipage}[t]{6cm}
+          \begin{flushright}
+          \end{flushright}
+        \end{minipage}}%
+    \end{picture}    
+  \end{minipage}%
+  \vspace{0.1cm}
+
+  \begin{beamercolorbox}[ht=2.5ex,dp=1.125ex,%
+    leftskip=.3cm,rightskip=.3cm plus1fil]{author in head/foot}
+    \leavevmode{\usebeamerfont{author in head/foot}%
+    \insertsection $\;\;\;$\insertsubsection}
+    \hfill%
+    {\insertshortinstitute}%
+  \end{beamercolorbox}%
+}
+
+% Definition Fu�eiste
+
+\setbeamertemplate{footline}
+{%
+  \begin{beamercolorbox}[ht=2.5ex,dp=1.125ex,%
+    leftskip=.3cm,rightskip=.3cm plus1fil]{author in head/foot}
+    \leavevmode{\usebeamerfont{author in head/foot}%
+     }
+    \insertshorttitle
+    \hfill%
+    {\insertframenumber}%
+\end{beamercolorbox}%
+}
+
+
+
+\mode
+<all>

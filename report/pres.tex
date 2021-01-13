@@ -1,0 +1,154 @@
+\documentclass[fleqn]{beamer}
+\usepackage[english]{babel}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{biblatex}
+\usepackage{varwidth}
+\usepackage{tabulary}
+\usepackage[semibold]{sourcesanspro}
+\usepackage{hyperref}
+% \usepackage{enumitem}
+
+
+% vertical separator macro
+\newcommand{\vsep}{
+  \column{0.0\textwidth}
+    \begin{tikzpicture}
+      \draw[very thick,black!10] (0,0) -- (0,7.3);
+    \end{tikzpicture}
+}
+
+
+% Beamer theme
+\usetheme{ZMBZFMK}
+% \usefonttheme[onlysmall]{structurebold}
+\usefonttheme[onlymath]{serif}
+\mode<presentation>
+\setbeamercovered{transparent=10}
+
+\setbeamertemplate{itemize items}[triangle]
+
+% align spacing
+\setlength{\jot}{0pt}
+
+% Page number does not increase with \pause
+\setbeamertemplate{footline}[frame number]{}
+
+% remove navigation symbols
+% \setbeamertemplate{navigation symbols}{}
+
+% Biblio
+\bibliography{bayespca}
+
+\title{Bayesian PCA }
+\subtitle{\normalsize{Christopher M. Bishop}}
+\author{Maxence Giraud}
+\institute{Master Data Science - Bayesian Learning}
+\date{\today}
+
+\begin{document}
+
+\begin{frame}
+    \titlepage
+\end{frame}
+
+% \section{PCA \& Probabilistic PCA}
+\begin{frame}{PCA \& Probabilistic PCA}
+    \begin{itemize}
+        \item PCA
+    \end{itemize}
+    \begin{enumerate}
+        \item Sample covariance matrix : $ \mathbf{S} = \dfrac{1}{N} \mathbf{X}^T \mathbf{X} $ 
+        \item New representation : $ \mathbf{U}^T \mathbf{X}$, with $\mathbf{U}$ matrix of eigenvectors of S (corresponding to largest eigenvalues).
+        
+    \end{enumerate}
+    \pause
+    \begin{itemize}[<+->]
+        \item Probabilistic PCA \cite{tipping1999ppca} : 
+    \end{itemize}
+    \begin{enumerate}
+        \item Observed variable $x$ is defined as a linear transformation (represented by the $d \times q$ matrix $\mathbf{W}$) of $y$ with an additive Gaussian noise ($\epsilon \sim \mathcal{N}(0,\mathbf{I}_d$) )  : $p(\mathbf{x} \mid \mathbf{y}) = \mathbf{W} \mathbf{y} + \epsilon$
+        \item Marginal of the observed variable : $p(\mathbf{x})=\int p(\mathbf{x} \mid \mathbf{y}) p(\mathbf{y}) d \mathbf{y}=\mathcal{N}(0, \mathbf{C})$, with $\mathbf{C} = \mathbf{W} \mathbf{W}^T + \sigma^2 \mathbf{I}_d $
+        \item From this we can find the log likelihood and then find the maximum likelihood solution which has a closed form.
+    \end{enumerate}
+    
+    
+\end{frame}
+
+% \section{Bayesian PCA  \cite{bishop1999bayesian}}
+\begin{frame}{Bayesian PCA\cite{bishop1999bayesian}}
+    \begin{itemize}
+        \item Introduce a prior over the parameters of the model 
+        \item Goal of Bayesian PCA is to find the effective dimensionality $q_{\text{eff}}$ of the latent space, so introduce a hierarchical prior over $\mathbf{W}$ : $p(\mathbf{W} \mid \mathbf{\alpha}) = \prod_{i=1}^q (\frac{\alpha_i}{2 \pi})^{d/2} \exp(-\frac{1}{2} \alpha_i \| \mathbf{w}_i\|^2)$
+        \item Each $\alpha_i$ controls the inverse variance of the corresponding $\mathbf{w}_i$ (columns of $\mathbf{W}$)
+        \item Marginalize over the posterior of $\mathbf{W}$ (analytically intractable) : $\ln p(\mathbf{W} \mid D)=L-\frac{1}{2} \sum_{i=1}^{d-1} \alpha_{i}\left\|\mathbf{w}_{i}\right\|^{2}+\text { const }$
+        \item Though ML : $\alpha_i = \frac{d}{\|\mathbf{w}_i\|^2}$
+        \item Then use an Expectation Maximization algorithm to find the solution.
+    \end{itemize}
+\end{frame}
+
+% \section{Kernel PCA}
+\begin{frame}{Kernel PCA}
+    \begin{itemize}
+        \item Kernel PCA
+    \end{itemize}
+    \begin{enumerate}
+        \setlength\itemsep{1em}
+        \item Express the Sample covariance matrix with a following : $ \mathbf{S} = \frac{1}{N} \mathbf{X} ^T \mathbf{H} \mathbf{H} \mathbf{X} = , \text{ with }  \mathbf{H} = \mathbf{I}_N -\frac{1}{N} \mathbf{1}_N \mathbf{1}_N^T  $
+        \item $\frac{1}{N} \mathbf{H}  \mathbf{X} \mathbf{X}^T \mathbf{H}$ and $\mathbf{S}$ have the same eigenvalues.
+        \item Kernel Trick : we can replace inner product $\mathbf{X} \mathbf{X}^T$ with the Kernel $\mathbf{K}$ $\rightarrow$ allows us to work directly with the kernel and not in the $\phi$-space. 
+    \end{enumerate}
+    \pause
+    \begin{itemize}
+        \item Probabilistic Kernel PCA  \cite{pkpca}
+    \end{itemize}
+    \begin{enumerate}
+        \item Still assume $ \mathbf{X} = \mathbf{W} \mathbf{Y} + \epsilon$, and so $p(\mathbf{X} \mid \mathbf{Y}) = \mathcal{N}(\mathbf{W} \mathbf{Y},N \sigma^2 (\mathbf{I}_N \otimes \mathbf{I}_q ) ) $
+        \item We can then formulate the full likelihood: $ L = - \frac{N}{2}  \log \sigma^2  - \frac{1}{2N} \operatorname{Tr}(\mathbf{Y} \mathbf{Y}^T) -  \frac{1}{N \sigma^2} \operatorname{Tr}((\mathbf{X} - \mathbf{W} \mathbf{Y})(\mathbf{X} - \mathbf{W} \mathbf{Y})^T)$
+    \end{enumerate}
+
+
+\end{frame}
+
+% \section{Probabilistic Kernel PCA}
+\begin{frame}{Probabilistic Kernel PCA}
+    
+    \begin{enumerate}[3]
+        \item Use again an EM method to maximize it, which after simplification : 
+    \end{enumerate}
+
+    \begin{equation*}
+         \begin{aligned}       
+        \widetilde{ \mathbf{W}} &= \mathbf{H} \mathbf{K} \mathbf{H} \mathbf{W} (N \sigma^2 \mathbf{I}_q + \mathbf{M}^-1 \mathbf{W}^T \mathbf{H} \mathbf{K} \mathbf{H} \mathbf{W})^{-1} \\
+    \widetilde{ \sigma^2 } &= \frac{1}{N^2} ( \operatorname{Tr}(\mathbf{H} \mathbf{K} \mathbf{H}) - \mathbf{H} \mathbf{K} \mathbf{H} \mathbf{W} \mathbf{M}^{-1} \widetilde{ \mathbf{W}} )
+\end{aligned}
+    \end{equation*}
+
+    \pause
+
+    \begin{itemize}
+        \item Bayesian Kernel PCA
+    \end{itemize}
+    \begin{enumerate}
+        \item Follow the same reasonning as for Bayesian PCA with hierarchical prior $p(\mathbf{W} \mid \mathbf{\alpha})$, maximize log posterior with the L computed in PKPCA.
+        \item Derive Very similar EM algo as PKPCA : 
+    \end{enumerate}
+
+    \begin{equation*}
+        \begin{aligned}
+            \widetilde{ \mathbf{W}} &= \mathbf{H} \mathbf{K} \mathbf{H} \mathbf{W} (N \sigma^2 \mathbf{A} + \mathbf{M}^-1 \mathbf{W}^T \mathbf{H} \mathbf{K} \mathbf{H} \mathbf{W} )^{-1} \\
+            \widetilde{ \sigma^2 } &= \frac{1}{N^2} ( \operatorname{Tr}(\mathbf{H} \mathbf{K} \mathbf{H}) - \mathbf{H} \mathbf{K} \mathbf{H} \mathbf{W} \mathbf{M}^{-1} \widetilde{ \mathbf{W}} )
+        \end{aligned}
+        \label{em_pkpca}
+    \end{equation*}
+
+\end{frame}
+
+
+\begin{frame}{References}
+   \printbibliography
+\end{frame}
+
+\end{document}
